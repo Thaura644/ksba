@@ -1,0 +1,1485 @@
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/report/__init__.py ===
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/ksba.txt ===
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/controllers/ksba_controllers.py ===
+import json
+
+from odoo import http
+from odoo.http import request, Response
+
+
+class KsbaApiController(http.Controller):
+    @http.route('/kenya_school_bus_app/api/get_data', type='http', methods=['GET'], auth='public', csrf=False)
+    def get_data(self, **kwargs):
+        #logic to recieve schools from the database
+        schools = request.env['ksba.school'].sudo().search([])
+        #convert schools to JSON format
+        schools_json = schools.read(['name', 'address'])
+        return Response(json.dumps(schools_json), content_type = 'application/json')
+
+        data = {'example': 'example_value'}
+        serialized_data =  json.dumps(data)
+        return serialized_data
+    
+    # @http.route('kenya_school_bus_app/api/partners', methods=['GET'], auth='public', type='json')
+
+
+
+    @http.route('/kenya_school_bus_app/api/create_admin', methods=['POST'], type='json', auth='public')
+    def create_admin(self, **kwargs):
+        name = kwargs.get('name')
+        email = kwargs.get('email')
+
+        # Validate and process the form data as needed
+
+        admin_data = {
+            'name': name,
+            'email': email,
+            'role': 'administrator'
+        }
+
+        admin_partner = http.request.env['res.partner'].sudo().create(admin_data)
+
+        # Additional logic or response handling
+
+        return {'result': 'success', 'admin_id': admin_partner.id}
+    @http.route('/kenya_school_bus_app/api/partners', methods=['GET'], auth='public', type='json')
+    def get_partners(self):
+        partners = http.request.env['res.partner'].sudo().search([])
+        partner_data = []
+        for partner in partners:
+            partner_data.append({
+                'name': partner.name,
+                'role': partner.role
+            })
+        return {'result': 'success', 'data': partner_data}
+
+    
+    @http.route('/kenya_school_bus_app/api/schools', methods=['GET'], auth='public', type='json')
+
+    def get_schools(self, **kwargs):
+        schools = request.env['ksba_school'].sudo().search([]) #retrieve all schools
+        return schools.read(['name', 'address', 'phone']) #return selected fields as JSON
+    
+    #API endpoint for retrieveing buses
+    @http.route('/kenya_school_bus_app/api/buses', methods=['GET'], auth='public', type='json')
+    def get_buses(self, **kwargs):
+        buses = request.env['ksba_bus'].sudo().search([]) #retrieve all buses
+        return buses.read(['name', 'number_plate', 'capacity', 'route', 'model']) # return selected fields as JSON
+    
+
+     #API endpoint for retrieveing routes
+    @http.route('/kenya_school_bus_app/api/routes', methods=['GET'], auth='public', type='json')
+    def get_routes(self, **kwargs):
+        routes = request.env['ksba_route'].sudo().search([]) #retrieve all routes and stops
+        return routes.read(['name', 'description', 'school', 'distance', 'duration']) # return selected fields as JSON
+    
+
+     #API endpoint for retrieveing attendance
+    @http.route('/kenya_school_bus_app/api/attendances', methods=['GET'], auth='public', type='json')
+    def get_attendances(self, **kwargs):
+        attendances = request.env['ksba_attendance_record'].sudo().search([]) #retrieve the attendance record
+        return attendances.read(['bus', 'stop', 'date']) # return selected fields as JSON
+    
+
+
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/controllers/main.py ===
+from odoo import http
+from odoo.http import request, Response
+import googlemaps
+
+
+class Main(http.Controller):
+    @http.route('/api/get_data', type='http', methods=['GET'], auth='public', csrf=False)
+    def get_data(self, **kwargs):
+        # Logic to receive schools from the database
+        schools = request.env['ksba.school'].sudo().search([])
+
+        # Convert schools to JSON format
+        schools_json = schools.read(['name', 'address'])
+
+        # Generate the HTML response manually
+        html_content = '''
+            <html>
+            <head>
+                <style>
+                    .school-data {
+                        font-family: Arial, sans-serif;
+                        background-color: #f2f2f2;
+                        padding: 20px;
+                    }
+                    h1 {
+                        margin-bottom: 10px;
+                    }
+                    ul {
+                        list-style-type: none;
+                        padding: 0;
+                        margin: 0;
+                    }
+                    li {
+                        margin-bottom: 20px;
+                    }
+                    strong {
+                        font-weight: bold;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="school-data">
+                    <h1>Schools</h1>
+                    <ul>
+                        '''
+        for school in schools_json:
+            html_content += '''
+                        <li>
+                            <strong>Name:</strong> {}<br/>
+                            <strong>Address:</strong> {}
+                        </li>
+                        '''.format(school['name'], school['address'])
+        
+        html_content += '''
+                    </ul>
+                </div>
+            </body>
+            </html>
+        '''
+
+        # Return the HTML response
+        return Response(html_content, content_type='text/html')
+    
+
+        
+class Session(http.Controller):
+    @http.route("/api/login",type='http',auth="none", csrf='False')
+    def login(self, **kwargs):
+        if request.httprequest.method == 'GET':
+            # csrf_token = request.csrf_token()
+            return '''
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f2f2f2;
+                        padding: 20px;
+                    }
+                    form {
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-radius: 5px;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                        max-width: 400px;
+                        margin: 0 auto;
+                    }
+                    label {
+                        display: block;
+                        margin-bottom: 5px;
+                    }
+                    input[type="text"],
+                    input[type="password"] {
+                        width: 100%;
+                        padding: 8px;
+                        border-radius: 4px;
+                        border: 1px solid #ccc;
+                    }
+                    input[type="submit"] {
+                        background-color: #4CAF50;
+                        color: #ffffff;
+                        padding: 10px 15px;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    input[type="submit"]:hover {
+                        background-color: #45a049;
+                    }
+                </style>
+            </head>
+            <body>
+                <form method="post">
+                    <label for="db">Database:</label>
+                    <input type="text" id="db" name="db">
+
+                    <label for="email">Email:</label>
+                    <input type="text" id="email" name="email">
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password">
+
+                    <input type="submit" value="Submit">
+                </form>
+            </body>
+            </html>'''
+        
+        elif request.httprequest.method == 'POST':
+            db = kwargs.get('db')
+            email = kwargs.get('email')
+            password = kwargs.get('password')
+
+            if db and email and password:
+                request.session.authenticate(db, email, password)
+                return request.env['ir.http'].session_info()
+            else:
+                # Handle invalid or missing credentials
+                return http.Response("Invalid credentials", status=401)
+            
+class User(http.Controller):
+    @http.route('/api/create_user', type='http', auth='public', csrf='False')
+    def create_user(self, **kwargs):
+        user = request.env.user
+
+        if request.httprequest.method == 'GET':
+            # csrf_token = request.csrf_token()
+            return """
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f2f2f2;
+                    }
+                    
+                    .container {
+                        max-width: 400px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background-color: #fff;
+                        border-radius: 5px;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .form-group {
+                        margin-bottom: 20px;
+                    }
+                    
+                    label {
+                        display: block;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    
+                    input[type="text"],
+                    input[type="password"] {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        box-sizing: border-box;
+                    }
+                    
+                    input[type="submit"] {
+                        background-color: #4CAF50;
+                        color: #fff;
+                        padding: 10px 20px;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    
+                    input[type="submit"]:hover {
+                        background-color: #45a049;
+                    }
+                </style>
+            </head>
+            <body>
+                <form method="post">
+                    <label for="name">Name:</label><br>
+                    <input type="text" id="name" name="name"><br><br>
+                    <label for="role">Role:</label><br>
+                    <input type="text" id="role" name="role"><br><br>
+                    <label for="email">Email:</label><br>
+                    <input type="text" id="email" name="email"><br><br>
+                    <label for="phone">Phone:</label><br>
+                    <input type="text" id="phone" name="phone"><br><br>
+                    <label for="school">School:</label><br>
+                    <input type="text" id="school" name="school"><br><br>
+                    <input type="submit" value="Submit">
+                </form>
+            </body>
+            </html>
+            """
+
+        elif request.httprequest.method == 'POST':
+            # csrf_token = kwargs.get('csrf_token')
+            # if not request.csrf_token() == csrf_token:
+            #     return "Invalid CSRF token"
+
+            if user.has_group('base.group_erp_manager'):
+                role = kwargs.get('role')
+                if role in ['parent', 'driver', 'administrator']:
+                    partner_data = {
+                        'name': kwargs.get('name'),
+                        'role': role,
+                        'email': kwargs.get('email'),
+                        'phone': kwargs.get('phone'),
+                        'school': int(kwargs.get('school')), 
+                    }
+                    user = request.env['res.partner'].create(partner_data)
+                    return "User created successfully!"
+                else:
+                    return "Invalid role provided!"
+            else:
+                return "Access denied! You need administrator privileges to create a partner."
+            
+    @http.route('/api/signup', type='http', auth='public', website=True)
+    def signup_process(self, **kwargs):
+        name = kwargs.get('name')
+        email = kwargs.get('email')
+        role = kwargs.get('role')
+        password = kwargs.get('password')
+        user = request.env['res.users'].sudo().create({
+        'name': name,
+        'login': email,
+        'email': email,
+        'role': role,
+        'password': password
+        })
+        partner = request.env['res.partner'].sudo().create({
+            'name': name,
+            'email': email,
+            'user_id': user.id
+        })
+
+        return "Sign up successfully"
+
+
+class BusController(http.Controller):
+    @http.route('/api/bus_data', type='http', auth='user')
+    def get_bus_data(self, bus_number=None, **kwargs):
+        # Get the currently logged-in user
+        user = request.env.user
+
+        # Check if the user has a role that is associated with the bus
+        if user.role in ['parent', 'driver', 'administrator']:
+            # Retrieve the bus data based on the bus number
+            bus = request.env['bus.model'].sudo().search([('name', '=', bus_number)])
+
+            # Check if the bus is found
+            if bus:
+                # Return the bus data as a response
+                return http.Response(bus)
+            else:
+                return http.Response("Bus not found.", status=404)
+        
+        return http.Response("Unauthorized access.", status=403)
+
+    @http.route('/api/create_bus', type='http', auth='user', website=True)
+    def create_bus(self, **post):
+        user = request.env.user
+
+        if user.role in [ 'driver' ,'Administrator']:
+            bus_data = {
+                'plate_number': post.get('bus_name'),
+                'school_id': int(post.get('school_id')),
+                'capacity': int(post.get('capacity')),
+                'route': int(post.get('route')),          
+            }
+            bus = request.env['bus.model'].create(bus_data)
+            return "Bus created successfully!"
+        else:
+            return "Access denied! You need to be a driver to create a bus."
+
+    @http.route('/api/update_bus/<int:bus_id>', type='http', auth='user', website=True, methods=['POST'])
+    def update_bus_process(self, bus_id, **kwargs):
+        # Retrieve the bus record
+        bus = request.env['bus.model'].sudo().browse(bus_id)
+
+        # Get the submitted form data
+        name = kwargs.get('name')
+        capacity = kwargs.get('capacity')
+        school_id = kwargs.get('school_id')
+        driver_id = kwargs.get('driver_id')
+        route = kwargs.get('route')
+        bus_locations = kwargs.get('bus_locations')
+        current_location = kwargs.get('current_location')
+        child_ids = kwargs.get('child_ids')
+
+        # Update the bus details
+        bus.write({
+            'name': name,
+            'seats': seats,
+            'capacity': capacity,
+            'school_id': school_id,
+            'driver_id': driver_id,
+            'bus_locations': bus_locations,
+            'child_ids': child_ids,
+            'route': route,
+            
+        })
+
+        # Redirect to a success page or perform additional actions
+        return "Bus Updated successfully"
+
+    @http.route('/api/get_route/<int:bus_id>', type='http', auth='user', website=True, methods=['POST'])
+    def get_route(self, bus_id, **kwargs):
+        origin = kwargs.get('origin')
+        destination = kwargs.get('destination')
+
+        api_key = request.env['ir.config_parameter'].sudo().get_param('google_maps.api_key')
+        gmaps = googlemaps.Client(key=api_key)
+        directions = gmaps.directions(origin, destination)
+
+        if directions:
+            # Extract information from the direction response
+            route = directions[0]  # get the first route (you can handle multiple routes if available)
+
+            # Extract the duration and distance of the route
+            duration = route['legs'][0]['duration']['text']
+            distance = route['legs'][0]['distance']['text']
+
+            # Extract the steps of the route
+            steps = []
+            for step in route['legs'][0]['steps']:
+                step_info = {
+                    'distance': step['distance']['text'],
+                    'duration': step['duration']['text'],
+                    'instruction': step['html_instructions']
+                }
+                steps.append(step_info)
+
+            # Return the extracted information or perform other actions
+            return {
+                'duration': duration,
+                'distance': distance,
+                'steps': steps
+            }
+
+        return None  # Handle no directions found or error cases
+
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/controllers/__init__.py ===
+from . import main=== /opt/odoo17/custom_addons/kenya_school_bus_app/static/src/css/create_user_form.css ===
+/* kenya_school_bus_app/static/src/css/create_user_form.css */
+
+/* Form container */
+.oe_form_container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f7f7f7;
+}
+
+/* Form input styles */
+.oe_login_form_input {
+    margin-bottom: 10px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="email"],
+select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/api.py ===
+from odoo import http
+from odoo.http import request 
+from odoo.addons.web.controllers.main import import serialize_exception
+
+
+class KenyaSchoolBusAPI(http.Controller):
+    #api endpoint for retrieving schools
+    @http.route('/kenya_school_bus_app/api/schools', auth='none', methods=['GET'], csrf=False, type='json')
+    @serialize_exception
+    def get_schools(self, **kwargs):
+        schools = request.env['ksba_school'].sudo().search([]) #retrieve all schools
+        return schools.read(['name', 'address', 'phone']) #return selected fields as JSON
+    
+    #API endpoint for retrieveing buses
+    @http.route('/kenya_school_bus_app/api/buses', auth='none', methods=['GET'], csrf=False, type='json')
+    @serialize_exception
+    def get_buses(self, **kwargs):
+        buses = request.env['ksba_bus'].sudo().search([]) #retrieve all buses
+        return buses.read(['name', 'licence_plate', 'capacity']) # return selected fields as JSON
+    
+
+     #API endpoint for retrieveing routes
+    @http.route('/kenya_school_bus_app/api/routes', auth='none', methods=['GET'], csrf=False, type='json')
+    @serialize_exception
+    def get_routes(self, **kwargs):
+        routes = request.env['ksba_route'].sudo().search([]) #retrieve all routes and stops
+        return routes.read(['']) # return selected fields as JSON
+    
+
+     #API endpoint for retrieveing buses
+    @http.route('/api/kenya_school_bus_app/attendances', auth='none', methods=['GET'], csrf=False, type='json')
+    @serialize_exception
+    def get_attendances(self, **kwargs):
+        attendances = request.env['ksba_attendance_record'].sudo().search([]) #retrieve the attendance record
+        return attendances.read([]) # return selected fields as JSON
+    
+
+
+    === /opt/odoo17/custom_addons/kenya_school_bus_app/views/ksba_bus_location_views.xml ===
+<record id="view_ksba_bus_location_form" model="ir.ui.view">
+    <field name="name">ksba.bus.location.form</field>
+    <field name="model">ksba.bus.location</field>
+    <field name="inherit_id" ref="module_name.view_existing_form_or_tree_view"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='bus_locations']" position="after">
+            <field name="map_url" widget="image" options="{'zoom_control': true}"/>
+        </xpath>
+    </field>
+</record>
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/ksba_stop_views.xml ===
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+<data>
+        <record id="ksba_stop_view_tree" model="ir.ui.view">
+            <field name="name">ksba.stops.tree</field>
+            <field name="model">ksba.stop</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+
+                <tree string="Stop">
+                    <field name="name" />
+                    <field name="route_ids"/>
+                    <field name="bus"/>
+                    <field name="sequence" />
+                </tree>
+
+            </field>
+        </record>
+
+        <record id="ksba_stop_view_form" model="ir.ui.view">
+            <field name="name">ksba.stop.form</field>
+            <field name="model">ksba.stop</field>
+            <field name="priority" eval="8" />
+            <field name="arch" type="xml">
+                <form string="Stop">
+                    <sheet>
+                        <group col="4">
+                          <field name="bus_location" widget="field_view_map" mode="readonly" map_provider="openstreetmap"/>
+                          <field name="name" />
+                          <field name="bus"/>
+                          <field name="sequence" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="ksba_stop_action">
+            <field name="name">Stops</field>
+            <field name="res_model">ksba.stop</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- <record model="ir.actions.act_window.view" id="ksba_stop_action_form">
+            <field name="act_window_id" ref="ksba_stop_action" />
+            <field name="sequence" eval="20" />
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="ksba_stop_view_form" />
+        </record>
+        <record model="ir.actions.act_window.view" id="ksba_stop_action_tree">
+            <field name="act_window_id" ref="ksba_stop_action" />
+            <field name="sequence" eval="10" />
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="ksba_stop_view_tree" />
+        </record> -->
+
+
+         <menuitem id="ksba_stop_menuitem" name="Stop" parent="ksba_menu" sequence="20"/>
+         <menuitem id="ksba_stop_menuitem_form" name="Stops" parent="ksba_stop_menuitem" action="ksba_stop_action"
+              sequence="10"/>
+
+    </data>
+</odoo>
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/data.xml ===
+<odoo>
+    <data>
+    <record id="ir_cron_update_latitude" model="ir.cron">
+        <field name="name">Update Latitude of Stops</field>
+        <field name="model_id" ref="model_ksba_stop"/>
+        <field name="state">code</field>
+        <field name="code">model._update_latitude()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">seconds</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    </data>
+</odoo>
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/ksba_school_views.xml ===
+<odoo>
+    <data>
+        <!-- Form view -->
+        <record id="ksba_school_form_view" model="ir.ui.view">
+            <field name="name">ksba.school.form</field>
+            <field name="model">ksba.school</field>
+            <field name="arch" type="xml">
+                <form>                        <group>
+                            <field name="name"/>
+                            <field name="address"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                        </group>
+                        <notebook>
+                            <page string="Students">
+                                <field name="students">
+                                    <tree>
+                                        <field name="firstname"/>
+                                        <field name="lastname"/>
+                                        <field name="home_location"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Buses">
+                                <field name="buses_id">
+                                    <tree>
+                                        <field name="plate_number"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree view -->
+        <record id="ksba_school_tree_view" model="ir.ui.view">
+            <field name="name">ksba.school.tree</field>
+            <field name="model">ksba.school</field>
+            <field name="arch" type="xml">
+                <tree >
+                    <field name="name"/>
+                    <field name="address"/>
+                    <field name="email"/>
+                    <field name="phone"/>
+                </tree>
+            </field>
+        </record>
+
+          <record model="ir.actions.act_window" id="ksba_school_action">
+        <field name="name">School</field>
+        <field name="res_model">ksba.school</field>
+       <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menuitem -->
+    <menuitem id="ksba_school_menuitem" name="School" parent="ksba_menu" sequence="20"/>
+    <menuitem id="ksba_school_menuitem_form" name="School" parent="ksba_school_menuitem" action="ksba_school_action"
+              sequence="10"/>
+
+
+    </data>
+</odoo>=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/menu.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="ksba_menu"
+              name="KSBA"
+              sequence = "10"
+    />
+
+
+</odoo>=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/ksba_bus_views.xml ===
+<odoo>
+    <data>
+        <!-- Bus Form View -->
+        <record id="ksba_bus_form_view" model="ir.ui.view">
+            <field name="name">ksba.bus.form</field>
+            <field name="model">ksba.bus</field>
+            <field name="arch" type="xml">
+                <form string="Bus Form">
+                        <group>
+                             
+                            <field name="school_id"/>
+                            <field name="driver_id"/>
+                            <field name="capacity"/>
+                            <field name="bus_locations"/>   
+                            <field name="current_location"/>
+                            <field name="child_ids"/>
+                            <field name="stop_ids"/>
+                        </group>
+                    
+                </form>
+            </field>
+        </record>
+
+        <!-- Bus Tree View -->
+        <record id="ksba_bus_tree_view" model="ir.ui.view">
+            <field name="name">ksba.bus.tree</field>
+            <field name="model">ksba.bus</field>
+            <field name="arch" type="xml">
+                <tree string="Bus Tree">
+                             
+                            <field name="school_id"/>
+                            <field name="driver_id"/>
+                            <field name="capacity"/>
+                            <field name="bus_locations"/>   
+                            <field name="current_location"/>
+                            <field name="child_ids"/>
+                            <field name="stop_ids"/>
+                </tree>
+            </field>
+        </record>
+
+          <record model="ir.actions.act_window" id="ksba_bus_action">
+        <field name="name">Bus</field>
+        <field name="res_model">ksba.bus</field>
+       <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menuitem -->
+    <menuitem id="ksba_bus_menuitem" name="Bus" parent="ksba_menu" sequence="20"/>
+    <menuitem id="ksba_bus_menuitem_form" name="Bus" parent="ksba_bus_menuitem" action="ksba_bus_action"
+              sequence="10"/>
+
+
+    </data>
+</odoo>
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/create_user_form.xml ===
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="create_user_form" inherit_id="web.external_layout">
+        <xpath expr="//div[@class='container']" position="inside">
+            <div class="oe_login_form">
+                <h2>Create User</h2>
+                <form class="oe_form_container" method="post">
+                    <div class="oe_login_form_input">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" required="True"/>
+                    </div>
+                    <div class="oe_login_form_input">
+                        <label for="role">Role:</label>
+                        <select id="role" name="role" required="True">
+                            <option value="parent">Parent</option>
+                            <option value="driver">Driver</option>
+                            <option value="administrator">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="oe_login_form_input">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required="True"/>
+                    </div>
+                    <div class="oe_login_form_input">
+                        <label for="phone">Phone:</label>
+                        <input type="text" id="phone" name="phone" required="True"/>
+                    </div>
+                    <div class="oe_login_form_input">
+                        <label for="school">School:</label>
+                        <input type="text" id="school" name="school" required="True"/>
+                    </div>
+                    <div class="oe_login_form_input">
+                        <input type="submit" value="Create User"/>
+                    </div>
+                </form>
+            </div>
+        </xpath>
+        <xpath expr="//link[last()]" position="after">
+            <link rel="stylesheet" href="/kenya_school_bus_app/static/src/css/create_user_form.css"/>
+        </xpath>
+    </template>
+</odoo>
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/ksba_route_views.xml ===
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Tree view -->
+    <record id="ksba_route_tree_view" model="ir.ui.view">
+        <field name="name">ksba.route.tree</field>
+        <field name="model">ksba.route</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <!--                <field name="bus_id"/>-->
+                <field name="description"/>
+                <!-- <field name="stop_ids"/> -->
+                <field name="start_location"/>
+                <field name="end_location"/>
+                <field name="distance"/>
+                <field name="duration"/>
+                <field name="distance"/>
+                <field name="bus_ids"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view -->
+    <record id="ksba_route_form_view" model="ir.ui.view">
+        <field name="name">ksba.route.form</field>
+        <field name="model">ksba.route</field>
+        <field name="arch" type="xml">
+            <form>
+<!--                <header>-->
+<!--                    <button name="action_calculate_distance" string="Calculate Distance" type="object"-->
+<!--                            class="oe_highlight"/>-->
+<!--                    <button name="action_calculate_duration" string="Calculate Duration" type="object"-->
+<!--                            class="oe_highlight"/>-->
+<!--                </header>-->
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <!--                <field name="bus_id"/>-->
+                        <field name="description"/>
+                        <!-- <field name="stop_ids"/> -->
+                        <field name="start_location"/>
+                        <field name="end_location"/>
+                        <field name="distance"/>
+                        <field name="duration"/>
+                        <field name="distance"/>
+                        <field name="bus_ids"/>
+                    </group>
+                    <notebook>
+                        <page string="stop_ids">
+                            <field name="stop_ids" widget="many2many_tags"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+  
+
+
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="ksba_route_action">
+        <field name="name">Routes</field>
+        <field name="res_model">ksba.route</field>
+       <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menuitem -->
+    <menuitem id="ksba_route_menuitem" name="Routes" parent="ksba_menu" sequence="20"/>
+    <menuitem id="ksba_route_menuitem_form" name="Routes" parent="ksba_route_menuitem" action="ksba_route_action"
+              sequence="10"/>
+
+</odoo>
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/views/ksba_driver_views.xml ===
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_bus.py ===
+from odoo import models, fields
+
+class KsbaBus(models.Model):
+    _name = 'ksba.bus'
+    _description = 'Bus'
+
+    name= fields.Char(string="Bus Name", required=True)
+    bus_id = fields.Char(string="plate_number",required=True)
+    vehicle_id = fields.Many2one('ksba.bus', 'Vehicle', required=True)
+    school_id = fields.Many2one('ksba.school', string='School', required=True)
+    driver_ids = fields.Many2one('ksba.partners', string='Driver')
+    capacity = fields.Integer(required=True)
+    route = fields.Many2many('ksba.route', string='Route')
+    bus_locations = fields.Float(string='Bus locations', digits=(16,6))
+    current_location = fields.Float(string='current location', digits=(16,6))
+    latitude = fields.Float(string='Latitude', digits=(16,6))
+    longitude = fields.Float(string='Longitude', digits=(16,6))
+    child_ids = fields.One2many(
+    'ksba.child',
+        'bus_id',
+        string='Children'
+    )
+    stop_ids = fields.Many2one('ksba.stop',string="Stops")=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_partner.py ===
+from odoo import models, fields, api
+
+
+class Partner(models.Model):
+    _name="ksba.partners"
+    _inherit = 'res.partner'
+
+    role = fields.Selection(
+        selection=[
+            ('parent', 'Parent'),
+            ('driver', 'Driver'),
+            ('administrator', 'Administrator'),
+            ('student', 'Student'),
+        ],
+        string='Role',
+        default='parent'
+    )
+
+    parent_ids = fields.Many2one(
+        comodel_name='ksba.parent',
+        string='Parents',
+        ondelete='restrict',
+        domain="[('role', '=', 'parent')]" 
+    )
+    driver_ids = fields.Many2one(
+        comodel_name='ksba.driver',
+        string='Drivers',
+        ondelete='restrict',
+        domain="[('role', '=', 'driver')]" 
+    )
+    adminstrator_ids = fields.Many2one(
+        comodel_name='ksba.adminstrator',
+        string='administrators',
+        ondelete='restrict',
+        domain="[('role', '=', 'administrator')]" 
+    )
+
+    child_ids = fields.Many2one(
+        comodel_name='ksba.child',
+        string='Children',
+        ondelete='restrict',
+        domain=[('role', '=', 'student')]
+    )
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_parent.py ===
+from odoo import models, fields
+
+class KsbaParents(models.Model):
+    _name="ksba.parent"
+    _description="Parent"
+    firstname = fields.Char(required=True)
+    lastname= fields.Char(required=True)
+    home_location =  fields.Char(required=True)
+    phone=  fields.Integer(required=True)
+    parent_role_id= fields.One2many('ksba.partners','parent_ids',string="Parent")
+    children_ids=fields.Many2one('ksba.child',string="Parent")
+   === /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_patners.py ===
+from odoo import models, fields, api
+
+
+class Partner(models.Model):
+    _name="ksba.partners"
+    _inherit = 'res.partner'
+
+    role = fields.Selection(
+        selection=[
+            ('parent', 'Parent'),
+            ('driver', 'Driver'),
+            ('administrator', 'Administrator')
+        ],
+        string='Role',
+        default='parent'
+    )
+
+    parent_id = fields.Many2one(
+        comodel_name='res.partner',
+        string='Parent',
+        ondelete='restrict',
+        domain="[('role', '=', 'parent')]" 
+    )
+
+    child_id = fields.One2many(
+        comodel_name='res.partner',
+        inverse_name='parent_id',
+        string='Children'
+    )
+    bus_id = fields.Many2one(
+        comodel_name='bus.model',
+        string='Bus',
+        inverse_name='child_ids'
+    )
+    school_id = fields.Many2one(
+        comodel_name='ksba.school',
+        string='school'
+    )
+    attendance_id = fields.One2many('ksba.attendance','child_id',string='attendance')
+    seat_number = fields.Integer(string='Seat Number')=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_attendance_record.py ===
+from odoo import fields, models, api
+# from odoo.api import api
+
+
+class KsbaAttendanceRecord(models.Model):
+    _name = 'ksba.attendance'
+    # _inherit = 'mail.thread'
+    _description = 'Attendance record'
+    _order = "attendance_date desc"
+
+
+    name = fields.Char('Name', readonly=True, size=32)
+    attendance_date = fields.Date(
+        'Date', required=True, default=lambda self: fields.Date.today(),
+        tracking=True)
+    bus = fields.Many2one('ksba.bus', string='Bus', required=True)
+    stop = fields.Many2one('ksba.stop', string='Stop', required=True)
+    date = fields.Date(default=fields.Date.today())
+    school_id = fields.Many2one('ksba.school', string='School')
+    child_id = fields.Many2one('ksba.child',string="Student")
+    seat_number = fields.Integer(required=True)
+    state = fields.Selection(
+        [('draft', 'Draft'), ('start', 'Attendance Start'),
+         ('done', 'Attendance Taken'), ('cancel', 'Cancelled')],
+        'Status', default='draft', tracking=True)  
+
+
+    def attendance_draft(self):
+        self.state = 'draft'
+
+    def attendance_start(self):
+        self.state = 'start'
+
+    def attendance_done(self):
+        self.state = 'done'
+
+    def attendance_cancel(self):
+        self.state = 'cancel'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            sheet = self.env['ir.sequence'].next_by_code('ksba.attendance')
+            vals['name'] = sheet
+        return super(KsbaAttendanceRecord, self).create(vals_list)=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_partners.py ===
+from odoo import models, fields, api
+
+
+class Partner(models.Model):
+    _name="ksba.partners"
+    _description = "Partners"
+    _inherit = 'res.partner'
+
+
+    channel_ids = fields.Many2many(
+        comodel_name='ksba.channels',
+        relation='ksba_partners_channels_rel',
+        column1='partner_id',
+        column2='channel_id',
+        string='Channels'
+    )
+
+    role = fields.Selection(
+        selection=[
+            ('parent', 'Parent'),
+            ('driver', 'Driver'),
+            ('administrator', 'Administrator')
+        ],
+        string='role',
+        default='parent'
+    )
+
+    parent_ids = fields.Many2one(
+        comodel_name='ksba.parent',
+        string='Parents',
+        ondelete='restrict',
+        domain="[('role', '=', 'parent')]" 
+    )
+    driver_ids = fields.Many2one(
+        comodel_name='ksba.driver',
+        string='Drivers',
+        ondelete='restrict',
+        domain="[('role', '=', 'driver')]" 
+    )
+    adminstrator_ids = fields.Many2one(
+        comodel_name='ksba.adminstrator',
+        string='administrators',
+        ondelete='restrict',
+        domain="[('role', '=', 'administrator')]" 
+    )
+
+    child_ids = fields.Many2one(
+        comodel_name='ksba.child',
+        string='Children'
+    )=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_stop.py ===
+from odoo import models, fields, api
+from geopy.geocoders import GoogleV3
+
+class KsbaStop(models.Model):
+    _name = 'ksba.stop'
+    _description = 'Stop'
+
+    name = fields.Char(required=True)
+    route_ids = fields.Many2many('ksba.route', 'stop_ids', string='Route', required=True)
+    sequence = fields.Integer()
+    latitude = fields.Float(string='Latitude', digits=(16,6))
+    longitude = fields.Float(string='Longitude', digits=(16,6))
+    from_stop_id = fields.Many2one('ksba.stop', 'From', required=True)
+    to_stop_id = fields.Many2one('ksba.stop', 'To', required=True) 
+    bus_ids = fields.Many2many('ksba.bus', string='Buses', relation='ksba_bus_stop_rel', column1='stop_id', column2='bus_id')
+
+    bus_location = fields.Float(string='Bus locations', digits=(16,6))
+
+    timestamp = fields.Datetime(default=fields.Datetime.now)
+
+    @api.model
+    def update_bus_location(self, bus_id, latitude, longitude):
+        bus_location = self.search([('bus_id', '=', bus_id)], limit=1)
+        if bus_location:
+            bus_location.write({'location': (latitude, longitude)})
+
+        else: 
+            self.create({
+                'bus_id': bus_id,
+                'location': (latitude, longitude)
+            })
+
+    def fetch_live_gps():
+        #your code to fetch the live gps goes here
+        bus_id = ''
+        latitude= ''
+        longitude= ''
+
+        bus_location_obj = self.env['ksba.stop']
+        bus_location_obj.update_bus_location(bus_id, latitude, longitude)
+
+
+
+
+    # def get_geolocation(address):
+    #     geolocator = GoogleV3(api_key='YOUR_API-KEY')
+    #     location = geolocator.geocode(address)
+    #     if  location: 
+    #         latitude = location.latitude
+    #         longitude = location.longitude
+
+
+
+    # def update_latitude(self, latitude):
+    #     self.ensure_one()
+    #     self.latitude = latitude
+
+   === /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_route.py ===
+from odoo import models, fields, api
+from lxml import etree
+from googlemaps import Client
+import math
+import polyline
+
+class KsbaRoute(models.Model):
+    _name = 'ksba.route'
+    _description = 'Route'
+
+    name = fields.Char(required=True)
+    stop_ids = fields.Many2many('ksba.stop', string='Stops')
+    cost = fields.Float('Cost')
+    buses = fields.Many2many('ksba.bus', 'route', string='Buses')
+    description = fields.Text(string='Description')
+    start_location = fields.Float(string='Start Location',digits=(16,6) )
+    end_location = fields.Float(string='End Location',digits=(16,6))
+    start_time = fields.Float('Start Time', required=True)
+    end_time = fields.Float('End Time', required=True)
+    student_ids = fields.Many2many('ksba.school', string='Student(s)')
+
+    latitude = fields.Float(string='Latitude', digits=(16, 6))
+    longitude = fields.Float(string='Longitude', digits=(16, 6))
+    bus_locations = fields.Many2one('ksba.bus.location', string='Bus locations')
+
+    distance = fields.Float(string='Distance', compute='_compute_distance', store=True)
+    duration = fields.Float(string='Duration', compute='_compute_duration', store=True)
+
+    bus_ids = fields.Many2many('ksba.bus', string='Buses')
+
+    google_maps_api_key = fields.Many2one(string='Google Maps API Key')
+    map_url = fields.Char(string='Map URL', compute='_compute_map_url')
+
+    @api.depends('bus_locations', 'google_maps_api_key')
+    def _compute_map_url(self):
+        gmaps = Client(key=self.google_maps_api_key)
+        for location in self:
+            encoded_polyline = polyline.encode([
+                (location.bus_locations, 0.0),  # Add other coordinates here if needed
+            ])
+            map_url = gmaps.static_map(
+                encoded_polyline,
+                size=(400, 400),
+                zoom=15
+            )
+            location.map_url = map_url
+
+    === /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_school.py ===
+
+from odoo import models, fields
+
+
+class KsbaSchool(models.Model):
+    _name = 'ksba.school'
+    _description = 'School'
+
+    model_id = fields.Many2one('ir.model', string='Model', compute='_compute_model_id')
+    name = fields.Char(string='Name', required=True)
+    address = fields.Char(string='Address')
+    email = fields.Char(string='Email')
+    phone = fields.Char(string='Phone')
+    students = fields.One2many('ksba.child', 'school_id', string='Students')
+    buses_id = fields.One2many('ksba.bus', 'school_id', string='Buses')
+    attendance_ids = fields.One2many('ksba.attendance', 'school_id', string='Attendance')
+    website = fields.Char()
+    driver_ids=fields.One2many('ksba.driver',"school_id", string="Drivers")
+    administrator_ids = fields.One2many('ksba.administrator','school_id', string="Administrators")
+    
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_driver.py ===
+from odoo import models, fields
+
+class KsbaDriver(models.Model):
+    _name="ksba.driver"
+    _description="Driver"
+    name = fields.Char(required=True)
+    home_location =  fields.Char(required=True)
+    phone=fields.Integer(required=True)
+    driver_role_ids= fields.One2many('ksba.partners','driver_ids',string="Driver role IDs")
+    school_id=fields.Many2one('ksba.school',string="School")
+    === /opt/odoo17/custom_addons/kenya_school_bus_app/models/res_partner.py ===
+from odoo import models, fields, api
+
+
+class KsbaPartner(models.Model):
+    _name = 'res.partner'
+    _inherit = 'res.partner'
+
+    role = fields.Selection(
+        selection=[
+            ('parent', 'Parent'),
+            ('driver', 'Driver'),
+            ('administrator', 'Administrator')
+        ],
+        string='Role',
+        default='parent'
+    )
+
+    parent_id = fields.Many2one(
+        comodel_name='res.partner',
+        string='Parent',
+        ondelete='restrict',
+        domain="[('role', '=', 'parent')]"
+    )
+
+    child_ids = fields.One2many(
+        comodel_name='res.partner',
+        inverse_name='parent_id',
+        string='Children'
+    )
+
+    def set_partners(self):
+        parent_partner_data = {
+        'name': 'John Doe',
+        'role': 'parent'
+        }
+        parent_partners = self.env['res.partner'].create(parent_partner_data)
+        driver_partner_data = {
+        'name': 'John Doe',
+        'role': 'driver'
+        }
+        driver_partners = self.env['res.partner'].create(driver_partner_data)
+
+
+
+
+
+    
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_bus_location.py ===
+from odoo import fields, models, api
+from googlemaps import Client
+import polyline
+
+
+class KsbaBusLocation(models.Model):
+    _name = 'ksba.bus.location'
+    _description = 'Bus Location'
+    # _inherit = 'res.partner'
+    #
+    bus_id = fields.Many2one('ksba.bus', string='Bus', required=True)
+    bus_locations = fields.Many2one('ksba.route',string='Bus locations')
+
+    timestamp = fields.Datetime(default=fields.Datetime.now)
+
+    # @api.model
+    # def update_bus_location(self, bus_id, latitude, longitude):
+    google_maps_api_key = fields.Many2one('ksba.route',string='Google Maps API Key')
+
+    map_url = fields.Char(string='Map URL', compute='_compute_map_url')
+
+    
+
+    @api.depends('bus_locations', 'google_maps_api_key')
+    def _compute_map_url(self):
+        gmaps = Client(key=self.google_maps_api_key)
+        for location in self:
+            encoded_polyline = polyline.encode([
+                (location.bus_locations, 0.0),  # Add other coordinates here if needed
+            ])
+            map_url = gmaps.static_map(
+                encoded_polyline,
+                size=(400, 400),
+                zoom=15
+            )
+            location.map_url = map_url=== /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_child.py ===
+from odoo import models, fields
+
+class KsbaChild(models.Model):
+    _name = "ksba.child"
+    _description ="Child"
+    
+    firstname = fields.Char(string="firstnanme",required=True)
+    lastname= fields.Char(string="lastname",required=True)
+    home_location = fields.Char(required=True,string="home_location")
+    child_role_id= fields.One2many('ksba.partners','child_ids',string="Child Role ID")
+    parent_ids=fields.One2many('ksba.parent','children_ids',string="Parent")
+    school_id=fields.Many2one('ksba.school',string="School")
+    bus_id = fields.Many2one('ksba.bus',string="Assigned Bus")
+    attendance = fields.One2many('ksba.attendance','child_id',string="Attendance")
+    === /opt/odoo17/custom_addons/kenya_school_bus_app/models/ksba_administrator.py ===
+from odoo import models, fields
+
+class KsbaAdminstrator(models.Model):
+    _name="ksba.administrator"
+    _description="Administrator"
+    firstname = fields.Char(required=True)
+    lastname= fields.Char(required=True)
+    phone=fields.Integer(required=True)
+    administrator_role_ids= fields.One2many('ksba.partners','adminstrator_ids',string="Administrator")
+    school_id=fields.Many2one('ksba.school',string="School")
+    === /opt/odoo17/custom_addons/kenya_school_bus_app/models/__init__.py ===
+from . import ksba_bus, ksba_route, ksba_bus_location, ksba_attendance_record, ksba_stop, ksba_school,ksba_partners,ksba_driver,ksba_parent,ksba_child,ksba_administrator=== /opt/odoo17/custom_addons/kenya_school_bus_app/security/security.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<!--         Security Groups-->
+        <record id="group_parent" model="res.groups">
+            <field name="name">Parent</field>
+        </record>
+
+        <record id="group_driver" model="res.groups">
+            <field name="name">Driver</field>
+        </record>
+
+        <record id="group_administrator" model="res.groups">
+            <field name="name">Administrator</field>
+        </record>
+
+        <record id="access_ksba_school" model="ir.model.access">
+            <field name="name">Access KSBA School</field>
+            <field name="model_id" ref="model_ksba_school"/>
+            <field name="group_id" ref="group_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_bus" model="ir.model.access">
+            <field name="name">Access KSBA Bus</field>
+            <field name="model_id" ref="model_ksba_bus"/>
+            <field name="group_id" ref="group_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+        <record id="access_ksba_route" model="ir.model.access">
+            <field name="name">Access KSBA Route</field>
+            <field name="model_id" ref="model_ksba_route"/>
+            <field name="group_id" ref="group_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+        <record id="access_ksba_stop" model="ir.model.access">
+            <field name="name">Access KSBA Stop</field>
+            <field name="model_id" ref="model_ksba_stop"/>
+            <field name="group_id" ref="group_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+        <record id="access_ksba_attendance_record" model="ir.model.access">
+            <field name="name">Access KSBA Attendance Record</field>
+            <field name="model_id" ref="model_ksba_attendance_record"/>
+            <field name="group_id" ref="group_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+        <record id="access_ksba_bus_location" model="ir.model.access">
+            <field name="name">Access KSBA Bus Location</field>
+            <field name="model_id" ref="model_ksba_bus_location"/>
+            <field name="group_id" ref="group_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Assigning Security Groups -->
+<!--        <record id="ksba_school_group_parent" model="res.groups">-->
+<!--            <field name="users" eval="[(4, ref('base.group_user'))]"/>-->
+<!--        </record>-->
+<!--        <record id="ksba_school_group_driver" model="res.groups">-->
+<!--            <field name="users" eval="[(4, ref('base.group_user'))]"/>-->
+<!--        </record>-->
+<!--        <record id="ksba_school_group_administrator" model="res.groups">-->
+<!--            <field name="users" eval="[(4, ref('base.group_user'))]"/>-->
+<!--        </record>-->
+
+    </data>
+</odoo>
+
+
+<!-- #kenya_school_bus_app.access_ksba_stop, access_ksba_stop, kenya_school_bus_app.access_ksba_stop, base.group_user, 1,1,1,1
+#kenya_school_bus_app.access_ksba_child, access_ksba_child, kenya_school_bus_app.access_ksba_child, base.group_user, 1,1,1,1
+#kenya_school_bus_app.access_ksba_partners, access_ksba_partners, kenya_school_bus_app.access_ksba_partners, base.group_user, 1,1,1,1
+
+ -->=== /opt/odoo17/custom_addons/kenya_school_bus_app/security/ir.model.access.csv ===
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+kenya_school_bus_app.access_ksba_school, access_ksba_school,kenya_school_bus_app.model_ksba_school,base.group_user,1,1,1,1
+kenya_school_bus_app.access_ksba_bus, access_ksba_bus,kenya_school_bus_app.model_ksba_bus,base.group_user,1,1,1,1
+kenya_school_bus_app.access_ksba_route, access_ksba_route,kenya_school_bus_app.model_ksba_route,base.group_user,1,1,1,1
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/__manifest__.py ===
+{
+    'name': 'Kenya School Bus App',
+    'version': '1.0',
+    'sequence': -2221,
+    'summary': 'School bus management system',
+    'description': 'An efficient school bus management system with real-time tracking of buses, route optimization, and attendance management.',
+    'author': 'James Mweni',
+    'category': 'Extra Tools',
+    'depends': ['web'],
+    'data': [
+   
+        'security/ir.model.access.csv',
+        'views/data.xml',
+        'views/menu.xml',
+        'views/ksba_school_views.xml',
+        'views/create_user_form.xml',
+        'views/ksba_bus_views.xml',
+        'views/ksba_route_views.xml',
+        'views/ksba_stop_views.xml',
+        # 'views/ksba_attendance_record_views.xml',
+        # 'views/ksba_bus_location_views.xml',
+    ],
+    'demo': [],
+    'installable': True,
+    'application': True,
+    'auto_install': False,
+}
+# id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+# access_ksba_school,Access KSBA School,model_ksba_school,group_parent,1,0,0,0
+# access_ksba_bus,Access KSBA Bus,model_ksba_bus,group_administrator,1,1,1,1
+# access_ksba_route,Access KBSA Bus,model_ksba_route,base.group_user,1,0,0,0
+# access_ksba_stop,Access KSBA Stop,model_ksba_stop,base.group_user,1,0,0,0
+# access_ksba_attendance_record,Access KSBA Attendance Record, model_ksba_attendance_record,base.group_user,1,0,0,0
+# access_ksba_bus_location,Access KSBA Bus Location, model_ksba_bus_location,base.group_user,1,0,0,0
+#
+#
+# access_partner_user,Partner User,model_res_partner,base.group_user,1,1,0,0
+=== /opt/odoo17/custom_addons/kenya_school_bus_app/__init__.py ===
+from . import models,controllers

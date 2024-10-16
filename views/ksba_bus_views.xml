@@ -1,0 +1,56 @@
+<odoo>
+    <data>
+        <!-- Bus Form View -->
+        <record id="ksba_bus_form_view" model="ir.ui.view">
+            <field name="name">ksba.bus.form</field>
+            <field name="model">ksba.bus</field>
+            <field name="arch" type="xml">
+                <form string="Bus Form">
+                        <group>
+                             
+                            <field name="school_id"/>
+                            <field name="driver_id"/>
+                            <field name="capacity"/>
+                            <field name="bus_locations"/>   
+                            <field name="current_location"/>
+                            <field name="child_ids"/>
+                            <field name="stop_ids"/>
+                        </group>
+                    
+                </form>
+            </field>
+        </record>
+
+        <!-- Bus Tree View -->
+        <record id="ksba_bus_tree_view" model="ir.ui.view">
+            <field name="name">ksba.bus.tree</field>
+            <field name="model">ksba.bus</field>
+            <field name="arch" type="xml">
+                <tree string="Bus Tree">
+                             
+                            <field name="school_id"/>
+                            <field name="driver_id"/>
+                            <field name="capacity"/>
+                            <field name="bus_locations"/>   
+                            <field name="current_location"/>
+                            <field name="child_ids"/>
+                            <field name="stop_ids"/>
+                </tree>
+            </field>
+        </record>
+
+          <record model="ir.actions.act_window" id="ksba_bus_action">
+        <field name="name">Bus</field>
+        <field name="res_model">ksba.bus</field>
+       <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menuitem -->
+    <menuitem id="ksba_bus_menuitem" name="Bus" parent="ksba_menu" sequence="20"/>
+    <menuitem id="ksba_bus_menuitem_form" name="Bus" parent="ksba_bus_menuitem" action="ksba_bus_action"
+              sequence="10"/>
+
+
+    </data>
+</odoo>
