@@ -1,0 +1,60 @@
+<!-- kenya_school_bus_app/views/ksba_driver_views.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="ksba_driver_form_view" model="ir.ui.view">
+            <field name="name">ksba.driver.form</field>
+            <field name="model">ksba.driver</field>
+            <field name="arch" type="xml">
+                <form string="Driver">
+                    <sheet>
+                        <group>
+                            <field name="firstname"/>
+                            <field name="lastname"/>
+                            <field name="home_location"/>
+                            <field name="phone"/>
+                            <field name="school_id"/>
+                        </group>
+                        <notebook>
+                            <page string="Assigned Bus">
+                                <field name="partner_id">
+                                    <tree>
+                                        <field name="bus_id"/>
+                                        <field name="license_plate"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View -->
+        <record id="ksba_driver_tree_view" model="ir.ui.view">
+            <field name="name">ksba.driver.tree</field>
+            <field name="model">ksba.driver</field>
+            <field name="arch" type="xml">
+                <tree string="Drivers">
+                    <field name="firstname"/>
+                    <field name="lastname"/>
+                    <field name="phone"/>
+                    <field name="school_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="ksba_driver_action">
+            <field name="name">Drivers</field>
+            <field name="res_model">ksba.driver</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="ksba_driver_search_view"/>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem id="ksba_driver_menuitem" name="Drivers" parent="ksba_menu" sequence="70"/>
+        <menuitem id="ksba_driver_menuitem_form" name="Manage Drivers" parent="ksba_driver_menuitem" action="ksba_driver_action" sequence="10"/>
+    </data>
+</odoo>

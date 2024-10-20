@@ -1,0 +1,76 @@
+<!-- kenya_school_bus_app/views/ksba_partners_views.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="ksba_partners_form_view" model="ir.ui.view">
+            <field name="name">ksba.partners.form</field>
+            <field name="model">ksba.partners</field>
+            <field name="arch" type="xml">
+                <form string="Partner">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="role"/>
+                            <field name="parent_id"/>
+                            <field name="bus_id"/>
+                            <field name="school_id"/>
+                            <field name="seat_number"/>
+                        </group>
+                        <notebook>
+                            <page string="Children">
+                                <field name="child_ids">
+                                    <tree>
+                                        <field name="firstname"/>
+                                        <field name="lastname"/>
+                                        <field name="home_location"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Attendance">
+                                <field name="attendance_ids">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="attendance_date"/>
+                                        <field name="bus_id"/>
+                                        <field name="stop_id"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View -->
+        <record id="ksba_partners_tree_view" model="ir.ui.view">
+            <field name="name">ksba.partners.tree</field>
+            <field name="model">ksba.partners</field>
+            <field name="arch" type="xml">
+                <tree string="Partners">
+                    <field name="name"/>
+                    <field name="email"/>
+                    <field name="phone"/>
+                    <field name="role"/>
+                    <field name="school_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="ksba_partners_action">
+            <field name="name">Partners</field>
+            <field name="res_model">ksba.partners</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="ksba_partners_search_view"/>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem id="ksba_partners_menuitem" name="Partners" parent="ksba_menu" sequence="90"/>
+        <menuitem id="ksba_partners_menuitem_form" name="Manage Partners" parent="ksba_partners_menuitem" action="ksba_partners_action" sequence="10"/>
+    </data>
+</odoo>

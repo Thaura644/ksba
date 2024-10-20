@@ -1,0 +1,34 @@
+<!-- kenya_school_bus_app/views/menu.xml -->
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="ksba_menu" name="KSBA" sequence="10"/>
+
+    <!-- Schools Menu -->
+    <menuitem id="ksba_school_menuitem" name="Schools" parent="ksba_menu" sequence="20"/>
+    <menuitem id="ksba_school_menuitem_form" name="Manage Schools" parent="ksba_school_menuitem" action="ksba_school_action" sequence="10"/>
+
+    <!-- Buses Menu -->
+    <menuitem id="ksba_bus_menuitem" name="Buses" parent="ksba_menu" sequence="30"/>
+    <menuitem id="ksba_bus_menuitem_form" name="Manage Buses" parent="ksba_bus_menuitem" action="ksba_bus_action" sequence="10"/>
+
+    <!-- Routes Menu -->
+    <menuitem id="ksba_route_menuitem" name="Routes" parent="ksba_menu" sequence="40"/>
+    <menuitem id="ksba_route_menuitem_form" name="Manage Routes" parent="ksba_route_menuitem" action="ksba_route_action" sequence="10"/>
+
+    <!-- Stops Menu -->
+    <menuitem id="ksba_stop_menuitem" name="Stops" parent="ksba_menu" sequence="50"/>
+    <menuitem id="ksba_stop_menuitem_form" name="Manage Stops" parent="ksba_stop_menuitem" action="ksba_stop_action" sequence="10"/>
+
+    <!-- Attendance Menu -->
+    <menuitem id="ksba_attendance_menuitem" name="Attendance" parent="ksba_menu" sequence="60"/>
+    <menuitem id="ksba_attendance_menuitem_form" name="Manage Attendance" parent="ksba_attendance_menuitem" action="ksba_attendance_record_action" sequence="10"/>
+
+    <!-- Bus Locations Menu -->
+    <menuitem id="ksba_bus_location_menuitem" name="Bus Locations" parent="ksba_menu" sequence="70"/>
+    <menuitem id="ksba_bus_location_menuitem_form" name="Manage Bus Locations" parent="ksba_bus_location_menuitem" action="ksba_bus_location_action" sequence="10"/>
+
+    <!-- Partners Menu -->
+    <menuitem id="ksba_partners_menuitem" name="Partners" parent="ksba_menu" sequence="80"/>
+    <menuitem id="ksba_partners_menuitem_form" name="Manage Partners" parent="ksba_partners_menuitem" action="ksba_partners_action" sequence="10"/>
+
+</odoo>

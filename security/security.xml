@@ -1,0 +1,18 @@
+<!-- kenya_school_bus_app/security/security.xml -->
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Security Groups -->
+        <record id="group_parent" model="res.groups">
+            <field name="name">Parent</field>
+        </record>
+
+        <record id="group_driver" model="res.groups">
+            <field name="name">Driver</field>
+        </record>
+
+        <record id="group_administrator" model="res.groups">
+            <field name="name">Administrator</field>
+        </record>
+    </data>
+</odoo>

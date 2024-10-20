@@ -1,0 +1,63 @@
+<!-- kenya_school_bus_app/views/ksba_stop_views.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="ksba_stop_form_view" model="ir.ui.view">
+            <field name="name">ksba.stop.form</field>
+            <field name="model">ksba.stop</field>
+            <field name="arch" type="xml">
+                <form string="Stop">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="route_ids"/>
+                            <field name="sequence"/>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                        </group>
+                        <notebook>
+                            <page string="Bus Locations">
+                                <field name="bus_location_ids">
+                                    <tree>
+                                        <field name="latitude"/>
+                                        <field name="longitude"/>
+                                        <field name="timestamp"/>
+                                        <field name="map_url"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View -->
+        <record id="ksba_stop_tree_view" model="ir.ui.view">
+            <field name="name">ksba.stop.tree</field>
+            <field name="model">ksba.stop</field>
+            <field name="arch" type="xml">
+                <tree string="Stops">
+                    <field name="name"/>
+                    <field name="route_ids"/>
+                    <field name="sequence"/>
+                    <field name="latitude"/>
+                    <field name="longitude"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="ksba_stop_action">
+            <field name="name">Stops</field>
+            <field name="res_model">ksba.stop</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="ksba_stop_search_view"/>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem id="ksba_stop_menuitem" name="Stops" parent="ksba_menu" sequence="50"/>
+        <menuitem id="ksba_stop_menuitem_form" name="Manage Stops" parent="ksba_stop_menuitem" action="ksba_stop_action" sequence="10"/>
+    </data>
+</odoo>
