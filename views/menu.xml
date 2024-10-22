@@ -2,7 +2,7 @@
 <odoo>
    
         <!-- Main Menu -->
-        <menuitem id="ksba_menu" name="KSBA" sequence="-10"/>
+        <menuitem id="ksba_menu" name="KSBA" sequence="10"/>
 
        
         

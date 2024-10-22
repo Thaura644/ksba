@@ -9,7 +9,7 @@
     'category': 'Extra Tools',
     'depends': ['base', 'web', 'mail'],
     'external_dependencies': {
-        'python': ['googlemaps'],
+        'python': ['googlemaps', 'geopy'],
     },
     'data': [
         'security/security.xml',
