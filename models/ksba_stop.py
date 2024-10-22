@@ -16,7 +16,7 @@ class KsbaStop(models.Model):
     latitude = fields.Float(string='Latitude', digits=(16,6))
     longitude = fields.Float(string='Longitude', digits=(16,6))
     bus_ids = fields.Many2many('ksba.bus', 'ksba_bus_stop_rel', 'stop_id', 'bus_id', string='Buses')
-    bus_location_ids = fields.One2many('ksba.bus.location', 'stop_id', string='Bus Locations')
+    bus_location_ids = fields.One2many('ksba.buslocation', 'stop_id', string='Bus Locations')
 
     @api.model
     def create(self, vals):

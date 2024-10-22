@@ -14,7 +14,7 @@ class KsbaSchool(models.Model):
     students = fields.One2many('ksba.child', 'school_id', string='Students')
     buses_id = fields.One2many('ksba.bus', 'school_id', string='Buses')
     attendance_ids = fields.One2many('ksba.attendance', 'school_id', string='Attendance Records')
-    # driver_ids = fields.One2many('ksba.driver', 'school_id', string='Drivers')
+    driver_ids = fields.One2many('ksba.driver', 'school_id', string='Drivers')
     administrator_ids = fields.One2many('ksba.administrator', 'school_id', string='Administrators')
 
     def _compute_model_id(self):

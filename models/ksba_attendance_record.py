@@ -1,4 +1,3 @@
-# kenya_school_bus_app/models/ksba_attendance_record.py
 from odoo import fields, models, api
 
 class KsbaAttendanceRecord(models.Model):
@@ -9,11 +8,10 @@ class KsbaAttendanceRecord(models.Model):
 
     name = fields.Char('Attendance ID', readonly=True, size=32)
     attendance_date = fields.Date(
-        'Date', required=True, default=lambda self: fields.Date.today(), tracking=True
+        'Date', required=True, default=fields.Date.today, tracking=True
     )
     bus_id = fields.Many2one('ksba.bus', string='Bus', required=True, tracking=True)
     stop_id = fields.Many2one('ksba.stop', string='Stop', required=True, tracking=True)
-    date = fields.Date(default=fields.Date.today(), tracking=True)
     school_id = fields.Many2one('ksba.school', string='School', tracking=True)
     child_id = fields.Many2one('ksba.child', string="Student", tracking=True)
     seat_number = fields.Integer(string='Seat Number', required=True, tracking=True)

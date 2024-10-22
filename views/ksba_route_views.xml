@@ -1,6 +1,6 @@
-<!-- kenya_school_bus_app/views/ksba_route_views.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+<menuitem id="ksba_menu" name="KSBA" sequence="10"/>
     <data>
         <!-- Tree View -->
         <record id="ksba_route_tree_view" model="ir.ui.view">
@@ -51,7 +51,7 @@
                                 </field>
                             </page>
                             <page string="Map">
-                                <img t-if="record.map_url" t-att-src="record.map_url" style="width:100%; height:auto;"/>
+                                <img modifiers="{'invisible': [('map_url', '=', False)]}" src="map_url" style="width:100%; height:auto;"/>
                             </page>
                         </notebook>
                     </sheet>
@@ -59,9 +59,25 @@
             </field>
         </record>
 
+        <!-- Search View (added this) -->
+        <record id="ksba_route_search_view" model="ir.ui.view">
+            <field name="name">ksba.route.search</field>
+            <field name="model">ksba.route</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="start_location"/>
+                    <field name="end_location"/>
+                    <field name="distance"/>
+                    <field name="duration"/>
+                </search>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="ksba_route_action">
             <field name="name">Routes</field>
+            <field name="type">ir.actions.act_window</field>
             <field name="res_model">ksba.route</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="ksba_route_search_view"/>

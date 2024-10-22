@@ -1,7 +1,7 @@
-<!-- kenya_school_bus_app/views/ksba_administrator_views.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
+    <menuitem id="ksba_menu" name="KSBA" sequence="10"/>
         <!-- Form View -->
         <record id="ksba_administrator_form_view" model="ir.ui.view">
             <field name="name">ksba.administrator.form</field>
@@ -13,18 +13,8 @@
                             <field name="firstname"/>
                             <field name="lastname"/>
                             <field name="phone"/>
-                            <field name="school_id"/>
+                            <!-- <field name="role"/> Note: Ensure the role field exists in your model -->
                         </group>
-                        <notebook>
-                            <page string="Assigned Administrators">
-                                <field name="partner_id">
-                                    <tree>
-                                        <field name="name"/>
-                                        <field name="email"/>
-                                    </tree>
-                                </field>
-                            </page>
-                        </notebook>
                     </sheet>
                 </form>
             </field>
@@ -39,21 +29,36 @@
                     <field name="firstname"/>
                     <field name="lastname"/>
                     <field name="phone"/>
-                    <field name="school_id"/>
+                    <!-- <field name="role"/> Note: Ensure the role field exists in your model -->
                 </tree>
+            </field>
+        </record>
+
+        <!-- Search View (added this) -->
+        <record id="ksba_administrator_search_view" model="ir.ui.view">
+            <field name="name">ksba.administrator.search</field>
+            <field name="model">ksba.administrator</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="firstname"/>
+                    <field name="lastname"/>
+                    <field name="phone"/>
+                    <!-- <field name="role"/> Note: Ensure the role field exists in your model -->
+                </search>
             </field>
         </record>
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="ksba_administrator_action">
             <field name="name">Administrators</field>
+            <field name="type">ir.actions.act_window</field>
             <field name="res_model">ksba.administrator</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="ksba_administrator_search_view"/>
         </record>
 
         <!-- Menuitem -->
-        <menuitem id="ksba_administrator_menuitem" name="Administrators" parent="ksba_menu" sequence="80"/>
+        <menuitem id="ksba_administrator_menuitem" name="Administrators" parent="ksba_menu" sequence="60"/>
         <menuitem id="ksba_administrator_menuitem_form" name="Manage Administrators" parent="ksba_administrator_menuitem" action="ksba_administrator_action" sequence="10"/>
     </data>
 </odoo>

@@ -1,6 +1,6 @@
-<!-- kenya_school_bus_app/views/ksba_school_views.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+<menuitem id="ksba_menu" name="KSBA" sequence="10"/>
     <data>
         <!-- Form View -->
         <record id="ksba_school_form_view" model="ir.ui.view">
@@ -18,7 +18,7 @@
                         </group>
                         <notebook>
                             <page string="Students">
-                                <field name="students">
+                                <field name="students" widget="many2many_tags">
                                     <tree>
                                         <field name="firstname"/>
                                         <field name="lastname"/>
@@ -27,7 +27,7 @@
                                 </field>
                             </page>
                             <page string="Buses">
-                                <field name="buses_id">
+                                <field name="buses_id" widget="many2many_tags">
                                     <tree>
                                         <field name="license_plate"/>
                                         <field name="capacity"/>
@@ -36,7 +36,7 @@
                                 </field>
                             </page>
                             <page string="Attendance">
-                                <field name="attendance_ids">
+                                <field name="attendance_ids" widget="many2many_tags">
                                     <tree>
                                         <field name="name"/>
                                         <field name="attendance_date"/>
@@ -48,7 +48,7 @@
                                 </field>
                             </page>
                             <page string="Drivers">
-                                <field name="driver_ids">
+                                <field name="driver_ids" widget="many2many_tags">
                                     <tree>
                                         <field name="firstname"/>
                                         <field name="lastname"/>
@@ -57,7 +57,7 @@
                                 </field>
                             </page>
                             <page string="Administrators">
-                                <field name="administrator_ids">
+                                <field name="administrator_ids" widget="many2many_tags">
                                     <tree>
                                         <field name="firstname"/>
                                         <field name="lastname"/>
@@ -85,9 +85,24 @@
             </field>
         </record>
 
+        <!-- Search View (added this) -->
+        <record id="ksba_school_search_view" model="ir.ui.view">
+            <field name="name">ksba.school.search</field>
+            <field name="model">ksba.school</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="address"/>
+                    <field name="email"/>
+                    <field name="phone"/>
+                </search>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="ksba_school_action">
             <field name="name">Schools</field>
+            <field name="type">ir.actions.act_window</field>
             <field name="res_model">ksba.school</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="ksba_school_search_view"/>

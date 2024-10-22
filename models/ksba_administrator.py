@@ -1,4 +1,3 @@
-# kenya_school_bus_app/models/ksba_administrator.py
 from odoo import models, fields
 
 class KsbaAdministrator(models.Model):
@@ -8,6 +7,7 @@ class KsbaAdministrator(models.Model):
 
     firstname = fields.Char(string="First Name", required=True, tracking=True)
     lastname = fields.Char(string="Last Name", required=True, tracking=True)
+    email = fields.Char(string="Email", required=True, tracking=True)  # Add this line
     phone = fields.Char(string="Phone", required=True, tracking=True)
-    partner_id = fields.Many2one('ksba.partners', string="Partner")
+    partner_id = fields.Many2one('ksba.partners', string="Partner", required=True)
     school_id = fields.Many2one('ksba.school', string="School", tracking=True)

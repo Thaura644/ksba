@@ -1,10 +1,64 @@
-<record id="view_ksba_bus_location_form" model="ir.ui.view">
-    <field name="name">ksba.bus.location.form</field>
-    <field name="model">ksba.bus.location</field>
-    <field name="inherit_id" ref="module_name.view_existing_form_or_tree_view"/>
-    <field name="arch" type="xml">
-        <xpath expr="//field[@name='bus_locations']" position="after">
-            <field name="map_url" widget="image" options="{'zoom_control': true}"/>
-        </xpath>
-    </field>
-</record>
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="ksba_buslocation_form_view" model="ir.ui.view">
+            <field name="name">ksba.buslocation.form</field>
+            <field name="model">ksba.buslocation</field>
+            <field name="arch" type="xml">
+                <form string="Bus Location">
+                    <sheet>
+                        <group>
+                            <field name="bus_id"/>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                            <field name="timestamp"/>
+                            <field name="map_url"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View -->
+        <record id="ksba_buslocation_tree_view" model="ir.ui.view">
+            <field name="name">ksba.buslocation.tree</field>
+            <field name="model">ksba.buslocation</field>
+            <field name="arch" type="xml">
+                <tree string="Bus Locations">
+                    <field name="bus_id"/>
+                    <field name="latitude"/>
+                    <field name="longitude"/>
+                    <field name="timestamp"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Search View (added this) -->
+        <record id="ksba_buslocation_search_view" model="ir.ui.view">
+            <field name="name">ksba.buslocation.search</field>
+            <field name="model">ksba.buslocation</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="bus_id"/>
+                    <field name="latitude"/>
+                    <field name="longitude"/>
+                    <field name="timestamp"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="ksba_buslocation_action">
+            <field name="name">Bus Locations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">ksba.buslocation</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="ksba_buslocation_search_view"/>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem id="ksba_buslocation_menuitem" name="Bus Locations" parent="ksba_menu" sequence="80"/>
+        <menuitem id="ksba_buslocation_menuitem_form" name="Manage Bus Locations" parent="ksba_buslocation_menuitem" action="ksba_buslocation_action" sequence="10"/>
+    </data>
+</odoo>

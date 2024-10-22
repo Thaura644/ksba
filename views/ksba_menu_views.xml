@@ -1,0 +1,47 @@
+<record model="ir.actions.act_window" id="ksba_partner_action">
+    <field name="name">Partners</field>
+    <field name="res_model">ksba.partner</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_child_action">
+    <field name="name">Children</field>
+    <field name="res_model">ksba.child</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_bus_action">
+    <field name="name">Buses</field>
+    <field name="res_model">ksba.bus</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_driver_action">
+    <field name="name">Drivers</field>
+    <field name="res_model">ksba.driver</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_route_action">
+    <field name="name">Routes</field>
+    <field name="res_model">ksba.route</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_stop_action">
+    <field name="name">Stops</field>
+    <field name="res_model">ksba.stop</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_attendance_action">
+    <field name="name">Attendance</field>
+    <field name="res_model">ksba.attendance</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<record model="ir.actions.act_window" id="ksba_bus_location_action">
+    <field name="name">Bus Locations</field>
+    <field name="res_model">ksba.bus.location</field>
+    <field name="view_mode">tree,form</field>
+</record>

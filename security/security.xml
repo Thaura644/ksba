@@ -1,18 +1,106 @@
-<!-- kenya_school_bus_app/security/security.xml -->
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="1">
-        <!-- Security Groups -->
-        <record id="group_parent" model="res.groups">
-            <field name="name">Parent</field>
+    <data>
+        <!-- Groups -->
+        <record id="group_ksba_administrator" model="res.groups">
+            <field name="name">KSBA Administrator</field>
+        </record>
+        <record id="group_ksba_driver" model="res.groups">
+            <field name="name">KSBA Driver</field>
+        </record>
+        <record id="group_ksba_teacher" model="res.groups">
+            <field name="name">KSBA Teacher</field>
         </record>
 
-        <record id="group_driver" model="res.groups">
-            <field name="name">Driver</field>
+        <!-- Access Rights -->
+        <record id="access_ksba_administrator" model="ir.model.access">
+            <field name="name">access.ksba.administrator</field>
+            <field name="model_id" ref="model_ksba_administrator"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
         </record>
 
-        <record id="group_administrator" model="res.groups">
-            <field name="name">Administrator</field>
+        <record id="access_ksba_driver" model="ir.model.access">
+            <field name="name">access.ksba.driver</field>
+            <field name="model_id" ref="model_ksba_driver"/>
+            <field name="group_id" ref="group_ksba_driver"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_school" model="ir.model.access">
+            <field name="name">access.ksba.school</field>
+            <field name="model_id" ref="model_ksba_school"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_route" model="ir.model.access">
+            <field name="name">access.ksba.route</field>
+            <field name="model_id" ref="model_ksba_route"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_stop" model="ir.model.access">
+            <field name="name">access.ksba.stop</field>
+            <field name="model_id" ref="model_ksba_stop"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_attendance" model="ir.model.access">
+            <field name="name">access.ksba.attendance</field>
+            <field name="model_id" ref="model_ksba_attendance"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_bus" model="ir.model.access">
+            <field name="name">access.ksba.bus</field>
+            <field name="model_id" ref="model_ksba_bus"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_child" model="ir.model.access">
+            <field name="name">access.ksba.child</field>
+            <field name="model_id" ref="model_ksba_child"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_ksba_partners" model="ir.model.access">
+            <field name="name">access.ksba.partner</field>
+            <field name="model_id" ref="model_ksba_partners"/>
+            <field name="group_id" ref="group_ksba_administrator"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
         </record>
     </data>
 </odoo>

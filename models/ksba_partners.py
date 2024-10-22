@@ -1,4 +1,3 @@
-# kenya_school_bus_app/models/ksba_partners.py
 from odoo import models, fields, api
 
 class KsbaPartners(models.Model):
@@ -6,9 +5,7 @@ class KsbaPartners(models.Model):
     _description = "Partners"
     _inherits = {'res.partner': 'partner_id'}
 
-
-    partner_id = fields.Many2one('res.partner', string="Partner", ondelete="cascade")  # Linking to partners
-
+    partner_id = fields.Many2one('res.partner', string="Partner", required=True, ondelete="cascade")  # Linking to partners
 
     role = fields.Selection(
         selection=[
@@ -29,8 +26,7 @@ class KsbaPartners(models.Model):
         domain="[('role', '=', 'parent')]",
         tracking=True
     )
-    parent_name = fields.Char(related='parent_id.firstname', string='Parent Name')
-
+    parent_name = fields.Char(related='parent_id.firstname', string='Parent Name', store=True)
 
     child_ids = fields.One2many(
         comodel_name='ksba.child',
@@ -39,7 +35,6 @@ class KsbaPartners(models.Model):
         tracking=True
     )
     bus_id = fields.Many2one('ksba.bus', string='Assigned Bus', ondelete='set null')
-
 
     school_id = fields.Many2one(
         comodel_name='ksba.school',
@@ -53,7 +48,36 @@ class KsbaPartners(models.Model):
         string='Attendance Records',
         tracking=True
     )
-    administrator_ids = fields.One2many('ksba.administrator', 'partner_id',string="Administrator")
 
+    administrator_ids = fields.One2many('ksba.administrator', 'partner_id', string="Administrators")
 
     seat_number = fields.Integer(string='Seat Number', tracking=True)
+
+
+    def create_user_action(self):
+        # Get user input from the form
+        if not self.name or not self.email:
+            raise UserError("Name and Email are required fields.")
+
+        # Create a new partner record
+        new_partner = self.create({
+            'name': self.name,
+            'email': self.email,
+            'phone': self.phone,
+            'role': self.role,
+        })
+
+        # Optional: Perform any additional logic after creation, like sending a notification
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'res.partners',
+            'view_mode': 'form',
+            'res_id': new_partner.id,
+            'target': 'current',
+        }
+
+    @api.model
+    def action_cancel(self):
+        return {
+            'type': 'ir.actions.act_window_close',
+        }

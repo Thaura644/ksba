@@ -1,7 +1,8 @@
-<!-- kenya_school_bus_app/views/ksba_stop_views.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+<menuitem id="ksba_menu" name="KSBA" sequence="10"/>
     <data>
+    
         <!-- Form View -->
         <record id="ksba_stop_form_view" model="ir.ui.view">
             <field name="name">ksba.stop.form</field>
@@ -11,14 +12,14 @@
                     <sheet>
                         <group>
                             <field name="name"/>
-                            <field name="route_ids"/>
+                            <field name="route_ids" widget="many2many_tags"/>
                             <field name="sequence"/>
                             <field name="latitude"/>
                             <field name="longitude"/>
                         </group>
                         <notebook>
                             <page string="Bus Locations">
-                                <field name="bus_location_ids">
+                                <field name="bus_location_ids" widget="one2many">
                                     <tree>
                                         <field name="latitude"/>
                                         <field name="longitude"/>
@@ -40,7 +41,7 @@
             <field name="arch" type="xml">
                 <tree string="Stops">
                     <field name="name"/>
-                    <field name="route_ids"/>
+                    <field name="route_ids" widget="many2many_tags"/>
                     <field name="sequence"/>
                     <field name="latitude"/>
                     <field name="longitude"/>
@@ -48,9 +49,25 @@
             </field>
         </record>
 
+        <!-- Search View (added this) -->
+        <record id="ksba_stop_search_view" model="ir.ui.view">
+            <field name="name">ksba.stop.search</field>
+            <field name="model">ksba.stop</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="route_ids"/>
+                    <field name="sequence"/>
+                    <field name="latitude"/>
+                    <field name="longitude"/>
+                </search>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="ksba_stop_action">
             <field name="name">Stops</field>
+            <field name="type">ir.actions.act_window</field>
             <field name="res_model">ksba.stop</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="ksba_stop_search_view"/>

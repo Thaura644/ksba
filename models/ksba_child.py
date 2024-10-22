@@ -1,4 +1,3 @@
-# kenya_school_bus_app/models/ksba_child.py
 from odoo import models, fields
 
 class KsbaChild(models.Model):
