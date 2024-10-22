@@ -8,6 +8,9 @@
     'author': 'James Mweni',
     'category': 'Extra Tools',
     'depends': ['base', 'web', 'mail'],
+    'external_dependencies': {
+        'python': ['googlemaps'],
+    },
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
