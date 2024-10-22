@@ -29,19 +29,18 @@
         </record>
 
         <!-- Compile Actions -->
-        <record id="action_ksba" model="ir.actions.act_window">
+        <!-- <record id="action_ksba" model="ir.actions.act_window">
             <field name="name">KSBA Overview</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">ksba.school</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
             <field name="context">{}</field>
-        </record>
+        </record> -->
 
          <!-- Sub Menus -->
         <menuitem id="ksba_school_menuitem" name="Schools" parent="ksba_menu" action="ksba_school_action" sequence="20"/>
         <menuitem id="ksba_route_menuitem" name="Routes" parent="ksba_menu" action="ksba_route_action" sequence="30"/>
         <menuitem id="ksba_stop_menuitem" name="Stops" parent="ksba_menu" action="ksba_stop_action" sequence="40"/>
-          <menuitem id="menu_ksba" name="KSBA" parent="base.menu_config"
-              action="action_ksba"/>
+          <!-- <menuitem id="menu_ksba" name="KSBA" parent="base.menu_config"  action="action_ksba"/> -->
 </odoo>
