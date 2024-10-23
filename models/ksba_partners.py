@@ -70,7 +70,7 @@ class KsbaPartners(models.Model):
         # Optional: Perform any additional logic after creation, like sending a notification
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'res.partners',
+            'res_model': 'res.partner',
             'view_mode': 'form',
             'res_id': new_partner.id,
             'target': 'current',
