@@ -60,7 +60,7 @@ class KsbaPartners(models.Model):
             raise UserError("Name and Email are required fields.")
 
         # Create a new partner record
-        new_partner = self.create({
+        new_partner = self.env['res.partner'].create({
             'name': self.name,
             'email': self.email,
             'phone': self.phone,
