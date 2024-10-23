@@ -94,7 +94,7 @@
         </record>
 
         <record id="access_ksba_partners" model="ir.model.access">
-            <field name="name">access.ksba.partner</field>
+            <field name="name">access.ksba.partners</field>
             <field name="model_id" ref="model_ksba_partners"/>
             <field name="group_id" ref="group_ksba_administrator"/>
             <field name="perm_read" eval="1"/>

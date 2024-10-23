@@ -1,6 +1,6 @@
 <record model="ir.actions.act_window" id="ksba_partner_action">
     <field name="name">Partners</field>
-    <field name="res_model">ksba.partner</field>
+    <field name="res_model">ksba.partners</field>
     <field name="view_mode">tree,form</field>
 </record>
 
@@ -42,6 +42,6 @@
 
 <record model="ir.actions.act_window" id="ksba_bus_location_action">
     <field name="name">Bus Locations</field>
-    <field name="res_model">ksba.bus.location</field>
+    <field name="res_model">ksba.buslocation</field>
     <field name="view_mode">tree,form</field>
 </record>
